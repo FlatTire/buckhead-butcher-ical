@@ -2,24 +2,19 @@
 Unit tests for Buckhead Butcher Shop events scraper.
 """
 
-import pytest
-from datetime import datetime
-from unittest.mock import patch, MagicMock
-import pytz
-from icalendar import Calendar
-from bs4 import BeautifulSoup
-
-# Import functions from the scraper
 import sys
+from datetime import datetime
 from pathlib import Path
+from unittest.mock import patch
+
+import pytest
+import pytz
+from bs4 import BeautifulSoup
+from icalendar import Calendar
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from bbical.__main__ import (
-    parse_date_time,
-    scrape_event_links,
-    scrape_event_details,
-    create_ical,
-)
+from bbical.__main__ import create_ical, parse_date_time, scrape_event_details, scrape_event_links
 
 EASTERN = pytz.timezone("US/Eastern")
 
@@ -59,8 +54,18 @@ class TestDateTimeParsing:
     def test_all_months(self):
         """Test parsing dates for all 12 months."""
         months = [
-            "january", "february", "march", "april", "may", "june",
-            "july", "august", "september", "october", "november", "december"
+            "january",
+            "february",
+            "march",
+            "april",
+            "may",
+            "june",
+            "july",
+            "august",
+            "september",
+            "october",
+            "november",
+            "december",
         ]
         for month_num, month_name in enumerate(months, 1):
             dt = parse_date_time(f"Friday, {month_name.capitalize()} 15th", "6:00 pm")
@@ -214,9 +219,7 @@ class TestEventDetailScraping:
         """
         mock_fetch.return_value = BeautifulSoup(html, "html.parser")
 
-        details = scrape_event_details(
-            "https://buckheadbutchershop.com/some-event/"
-        )
+        details = scrape_event_details("https://buckheadbutchershop.com/some-event/")
         # Should fallback to body parsing
         assert details["datetime"].month >= 1
 

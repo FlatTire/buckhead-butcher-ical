@@ -5,11 +5,11 @@ Scrape Buckhead Butcher Shop classes/events and generate iCal file.
 
 import re
 from datetime import datetime, timedelta
-from urllib.parse import urljoin
+
+import pytz
 import requests
 from bs4 import BeautifulSoup
 from icalendar import Calendar, Event
-import pytz
 
 BASE_URL = "https://buckheadbutchershop.com"
 CLASSES_PAGE = f"{BASE_URL}/classes-events/"
@@ -17,6 +17,7 @@ OUTPUT_FILE = "buckhead_butcher_classes.ics"
 
 # Eastern timezone
 EASTERN = pytz.timezone("US/Eastern")
+
 
 def parse_date_time(date_str, time_str, reference_date=None):
     """
@@ -34,7 +35,7 @@ def parse_date_time(date_str, time_str, reference_date=None):
         reference_date = datetime.now(tz=EASTERN)
 
     # Parse time
-    time_match = re.search(r'(\d{1,2}):(\d{2})\s*(am|pm)', time_str.lower())
+    time_match = re.search(r"(\d{1,2}):(\d{2})\s*(am|pm)", time_str.lower())
     if not time_match:
         raise ValueError(f"Could not parse time: {time_str}")
 
@@ -48,7 +49,7 @@ def parse_date_time(date_str, time_str, reference_date=None):
         hour = 0
 
     # Parse date (e.g., "Saturday, November 28th")
-    date_match = re.search(r'([A-Za-z]+),?\s+([A-Za-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?', date_str)
+    date_match = re.search(r"([A-Za-z]+),?\s+([A-Za-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?", date_str)
     if not date_match:
         raise ValueError(f"Could not parse date: {date_str}")
 
@@ -57,9 +58,18 @@ def parse_date_time(date_str, time_str, reference_date=None):
 
     # Get month number
     months = {
-        "january": 1, "february": 2, "march": 3, "april": 4,
-        "may": 5, "june": 6, "july": 7, "august": 8,
-        "september": 9, "october": 10, "november": 11, "december": 12
+        "january": 1,
+        "february": 2,
+        "march": 3,
+        "april": 4,
+        "may": 5,
+        "june": 6,
+        "july": 7,
+        "august": 8,
+        "september": 9,
+        "october": 10,
+        "november": 11,
+        "december": 12,
     }
     month = months.get(month_name.lower())
     if not month:
@@ -78,14 +88,14 @@ def parse_date_time(date_str, time_str, reference_date=None):
 
     return dt
 
+
 def fetch_page(url):
     """Fetch and parse a webpage."""
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    }
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
     response = requests.get(url, headers=headers, timeout=10)
     response.raise_for_status()
     return BeautifulSoup(response.content, "html.parser")
+
 
 def scrape_event_links():
     """Scrape the main classes/events page and return list of event URLs."""
@@ -104,18 +114,18 @@ def scrape_event_links():
         # - Must contain "class" in href (not just text)
         # - Must not be the main classes-events page itself
         # - Should have meaningful text
-        if (href.startswith(BASE_URL) and
-            "classes-events" not in href and
-            "class" in href.lower() and
-            text and
-            len(text) > 5):
+        if (
+            href.startswith(BASE_URL)
+            and "classes-events" not in href
+            and "class" in href.lower()
+            and text
+            and len(text) > 5
+        ):
             if href not in [e["url"] for e in events]:
-                events.append({
-                    "title": text,
-                    "url": href
-                })
+                events.append({"title": text, "url": href})
 
     return events
+
 
 def scrape_event_details(event_url):
     """Scrape details from an individual event page."""
@@ -127,7 +137,7 @@ def scrape_event_details(event_url):
 
     # Look for date pattern in URL first (more reliable)
     # Patterns: "steak-class-saturday-november-28th-6-30-pm"
-    url_date_pattern = r'([a-z]+)-([a-z]+)-(\d{1,2})(?:st|nd|rd|th)?-(\d{1,2})-(\d{2})-([ap]m)'
+    url_date_pattern = r"([a-z]+)-([a-z]+)-(\d{1,2})(?:st|nd|rd|th)?-(\d{1,2})-(\d{2})-([ap]m)"
     url_match = re.search(url_date_pattern, event_url)
 
     date_match = None
@@ -148,11 +158,11 @@ def scrape_event_details(event_url):
         # Look for date pattern: e.g., "Saturday, November 28th"
         # Only look in first 500 chars to avoid "Christmas" in footer or sidebar
         search_text = body_text[:1000]
-        date_pattern = r'([A-Za-z]+),?\s+([A-Za-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?'
+        date_pattern = r"([A-Za-z]+),?\s+([A-Za-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?"
         date_match = re.search(date_pattern, search_text)
 
         # Look for time pattern: e.g., "6:30 pm"
-        time_pattern = r'(\d{1,2}):(\d{2})\s*(am|pm)'
+        time_pattern = r"(\d{1,2}):(\d{2})\s*(am|pm)"
         time_match = re.search(time_pattern, search_text)
 
         if date_match and time_match:
@@ -164,7 +174,7 @@ def scrape_event_details(event_url):
 
     # Look for location
     location = "Buckhead Butcher Shop, 3198 Cains Hill Place NW, Atlanta GA 30305"
-    location_match = re.search(r'([\d\s,A-Za-z]+(?:Atlanta|GA|Georgia)[\d\s,A-Za-z]*)', body_text)
+    location_match = re.search(r"([\d\s,A-Za-z]+(?:Atlanta|GA|Georgia)[\d\s,A-Za-z]*)", body_text)
     if location_match:
         location = location_match.group(0).strip()
 
@@ -200,8 +210,9 @@ def scrape_event_details(event_url):
         "datetime": dt,
         "location": location,
         "description": description,
-        "url": event_url
+        "url": event_url,
     }
+
 
 def create_ical(events):
     """Create an iCalendar object from event data."""
@@ -225,6 +236,7 @@ def create_ical(events):
         cal.add_component(event)
 
     return cal
+
 
 def main():
     """Main entry point."""
@@ -258,6 +270,7 @@ def main():
         f.write(cal.to_ical())
 
     print(f"Done! Calendar saved to {OUTPUT_FILE}")
+
 
 if __name__ == "__main__":
     main()
