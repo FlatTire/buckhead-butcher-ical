@@ -7,7 +7,14 @@
       "Skill(update-config)",
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
-      "Bash(git commit -m 'build\\(deps\\): add web scraping and iCal dependencies:*)"
+      "Bash(git commit -m 'build\\(deps\\): add web scraping and iCal dependencies:*)",
+      "Bash(make lint:*)",
+      "Bash(make format:*)",
+      "Bash(make type-check:*)",
+      "Bash(make check:*)",
+      "Bash(make test:*)",
+      "Bash(make help:*)",
+      "Bash(make scrape:*)"
     ]
   }
 }
