@@ -145,7 +145,7 @@ resource "aws_cloudfront_distribution" "site" {
       }
     }
 
-    min_ttl     = 0
+    min_ttl     = 300
     default_ttl = 3600
     max_ttl     = 86400
   }
@@ -167,7 +167,7 @@ resource "aws_cloudfront_distribution" "site" {
       }
     }
 
-    min_ttl     = 0
+    min_ttl     = 300
     default_ttl = 31536000
     max_ttl     = 31536000
   }
@@ -189,7 +189,7 @@ resource "aws_cloudfront_distribution" "site" {
       }
     }
 
-    min_ttl     = 0
+    min_ttl     = 300
     default_ttl = 604800
     max_ttl     = 31536000
   }
