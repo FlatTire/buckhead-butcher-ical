@@ -1,0 +1,19 @@
+# AWS Configuration
+aws_region = "us-east-1"
+
+# Domain configuration
+domain_name = "noqa.io"
+hostname    = "buckheadbutcher.noqa.io"
+
+# Environment and tags
+environment = "production"
+
+tags = {
+  Project     = "Buckhead Butcher"
+  Environment = "production"
+  ManagedBy   = "Terraform"
+}
+
+# S3 versioning configuration
+s3_versioning_max_versions = 5
+s3_versioning_days         = 90
