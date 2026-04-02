@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:buckheadbutchershop.com)"
+      "WebFetch(domain:buckheadbutchershop.com)",
+      "Bash(python -m pip install -q requests beautifulsoup4 icalendar pytz)",
+      "Bash(uv sync:*)"
     ]
   }
 }
