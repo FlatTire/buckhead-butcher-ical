@@ -14,7 +14,7 @@ provider "aws" {
 
 # S3 bucket for static content
 resource "aws_s3_bucket" "site" {
-  bucket = var.hostname
+  bucket_prefix = "${var.domain_name}-site-"
 
   tags = var.tags
 }
