@@ -54,7 +54,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "site" {
     }
 
     noncurrent_version_expiration {
-      noncurrent_days = var.s3_versioning_days
+      noncurrent_days = var.s3_versioning_days + 90
     }
   }
 }
@@ -152,7 +152,51 @@ resource "aws_cloudfront_distribution" "site" {
 
   # Cache behavior for static assets (longer TTL)
   ordered_cache_behavior {
-    path_pattern           = "/*.{js,css,woff,woff2,ttf,otf,eot,svg}"
+    path_pattern           = "*.js"
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = true
+    viewer_protocol_policy = "redirect-to-https"
+    target_origin_id       = "S3Origin"
+
+    forwarded_values {
+      query_string = false
+
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl     = 300
+    default_ttl = 31536000
+    max_ttl     = 31536000
+  }
+
+  # Cache behavior for stylesheets
+  ordered_cache_behavior {
+    path_pattern           = "*.css"
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = true
+    viewer_protocol_policy = "redirect-to-https"
+    target_origin_id       = "S3Origin"
+
+    forwarded_values {
+      query_string = false
+
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl     = 300
+    default_ttl = 31536000
+    max_ttl     = 31536000
+  }
+
+  # Cache behavior for fonts
+  ordered_cache_behavior {
+    path_pattern           = "*.woff*"
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
     compress               = true
@@ -174,7 +218,51 @@ resource "aws_cloudfront_distribution" "site" {
 
   # Cache behavior for images (longer TTL)
   ordered_cache_behavior {
-    path_pattern           = "/*.{jpg,jpeg,png,gif,webp}"
+    path_pattern           = "*.jpg"
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = true
+    viewer_protocol_policy = "redirect-to-https"
+    target_origin_id       = "S3Origin"
+
+    forwarded_values {
+      query_string = false
+
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl     = 300
+    default_ttl = 604800
+    max_ttl     = 31536000
+  }
+
+  # Cache behavior for PNG images
+  ordered_cache_behavior {
+    path_pattern           = "*.png"
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = true
+    viewer_protocol_policy = "redirect-to-https"
+    target_origin_id       = "S3Origin"
+
+    forwarded_values {
+      query_string = false
+
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl     = 300
+    default_ttl = 604800
+    max_ttl     = 31536000
+  }
+
+  # Cache behavior for SVG and other images
+  ordered_cache_behavior {
+    path_pattern           = "*.svg"
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
     compress               = true
