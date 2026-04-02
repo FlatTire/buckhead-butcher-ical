@@ -1,5 +1,6 @@
 .PHONY: help lint format type-check test check clean dev scrape pre-commit \
-         tf-init tf-fmt tf-validate tf-plan tf-apply tf-destroy tf-outputs tf-check
+         tf-init tf-fmt tf-validate tf-plan tf-apply tf-destroy tf-outputs tf-check \
+         tf-state-init tf-state-import tf-state-plan tf-state-apply tf-state-outputs
 
 help:
 	@echo "Available targets:"
@@ -24,6 +25,13 @@ help:
 	@echo "  make tf-check      - Format + validate (no changes)"
 	@echo "  make tf-apply      - Apply Terraform changes (requires confirmation)"
 	@echo "  make tf-destroy    - Destroy Terraform infrastructure"
+	@echo ""
+	@echo "Terraform State Management:"
+	@echo "  make tf-state-init   - Initialize state management"
+	@echo "  make tf-state-plan   - Plan state infrastructure changes"
+	@echo "  make tf-state-apply  - Apply state infrastructure changes"
+	@echo "  make tf-state-outputs- Show state infrastructure outputs"
+	@echo "  make tf-state-import - Import existing bucket/table"
 
 lint:
 	uv run ruff check bbical tests
@@ -78,3 +86,21 @@ tf-apply:
 
 tf-destroy:
 	cd infra && terraform destroy
+
+# Terraform State Management targets
+tf-state-init:
+	cd terraform/state-management && terraform init
+
+tf-state-plan:
+	cd terraform/state-management && terraform plan -out=tfplan
+
+tf-state-apply:
+	cd terraform/state-management && terraform apply tfplan
+
+tf-state-outputs:
+	cd terraform/state-management && terraform output
+
+tf-state-import:
+	cd terraform/state-management && \
+	terraform import aws_s3_bucket.terraform_state pe-tfstate-400331679889-us-east-1 && \
+	terraform import aws_dynamodb_table.terraform_locks terraform-locks

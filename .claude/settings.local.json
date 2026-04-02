@@ -14,7 +14,11 @@
       "Bash(make check:*)",
       "Bash(make test:*)",
       "Bash(make help:*)",
-      "Bash(make scrape:*)"
+      "Bash(make scrape:*)",
+      "Bash(terraform init:*)",
+      "Bash(terraform validate:*)",
+      "Bash(terraform fmt:*)",
+      "Bash(terraform plan:*)"
     ]
   }
 }
