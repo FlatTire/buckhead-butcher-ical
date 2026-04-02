@@ -1,7 +1,10 @@
-.PHONY: help lint format type-check test check clean dev
+.PHONY: help lint format type-check test check clean dev scrape pre-commit \
+         tf-init tf-fmt tf-validate tf-plan tf-apply tf-destroy tf-outputs tf-check
 
 help:
 	@echo "Available targets:"
+	@echo ""
+	@echo "Python/Code:"
 	@echo "  make lint          - Run linting checks (ruff)"
 	@echo "  make format        - Format code (ruff)"
 	@echo "  make type-check    - Run type checking (mypy)"
@@ -11,6 +14,16 @@ help:
 	@echo "  make dev           - Install dev dependencies"
 	@echo "  make scrape        - Run the scraper"
 	@echo "  make pre-commit    - Run pre-commit hooks"
+	@echo ""
+	@echo "Terraform/Infrastructure:"
+	@echo "  make tf-init       - Initialize Terraform"
+	@echo "  make tf-fmt        - Format Terraform files"
+	@echo "  make tf-validate   - Validate Terraform configuration"
+	@echo "  make tf-plan       - Plan Terraform changes"
+	@echo "  make tf-outputs    - Show Terraform outputs"
+	@echo "  make tf-check      - Format + validate (no changes)"
+	@echo "  make tf-apply      - Apply Terraform changes (requires confirmation)"
+	@echo "  make tf-destroy    - Destroy Terraform infrastructure"
 
 lint:
 	uv run ruff check bbical tests
@@ -40,3 +53,28 @@ scrape:
 
 pre-commit:
 	uv run pre-commit run --all-files
+
+# Terraform targets
+tf-init:
+	cd infra && terraform init
+
+tf-fmt:
+	cd infra && terraform fmt -recursive
+
+tf-validate:
+	cd infra && terraform validate
+
+tf-check: tf-fmt tf-validate
+	@echo "Terraform format and validation passed!"
+
+tf-plan:
+	cd infra && terraform plan -out=tfplan
+
+tf-outputs:
+	cd infra && terraform output
+
+tf-apply:
+	cd infra && terraform apply tfplan
+
+tf-destroy:
+	cd infra && terraform destroy
