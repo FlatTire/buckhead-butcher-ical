@@ -376,3 +376,101 @@ resource "aws_route53_record" "site_aaaa" {
     evaluate_target_health = false
   }
 }
+
+# IAM role for Lambda function
+resource "aws_iam_role" "lambda_execution_role" {
+  name = "buckhead-butcher-ical-lambda-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = var.tags
+}
+
+# IAM policy for Lambda to write to S3 and create logs
+resource "aws_iam_role_policy" "lambda_policy" {
+  name = "buckhead-butcher-ical-lambda-policy"
+  role = aws_iam_role.lambda_execution_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:PutObjectAcl"
+        ]
+        Resource = "${aws_s3_bucket.site.arn}/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:${var.aws_region}:*:*"
+      }
+    ]
+  })
+}
+
+# Lambda function for generating iCalendar file
+resource "aws_lambda_function" "ical_generator" {
+  filename      = "lambda_function.zip"
+  function_name = "buckhead-butcher-ical-generator"
+  role          = aws_iam_role.lambda_execution_role.arn
+  handler       = "lambda_handler.lambda_handler"
+  runtime       = "python3.12"
+  timeout       = 60
+  memory_size   = 256
+
+  environment {
+    variables = {
+      ICS_BUCKET_NAME = aws_s3_bucket.site.id
+    }
+  }
+
+  depends_on = [
+    aws_iam_role_policy.lambda_policy
+  ]
+
+  tags = var.tags
+}
+
+# EventBridge rule for scheduling iCalendar generation
+resource "aws_cloudwatch_event_rule" "ical_schedule" {
+  name                = "buckhead-butcher-ical-schedule"
+  description         = "Schedule for generating Buckhead Butcher iCalendar file"
+  schedule_expression = var.ical_schedule_expression
+  state               = "ENABLED"
+
+  tags = var.tags
+}
+
+# EventBridge target (Lambda function)
+resource "aws_cloudwatch_event_target" "ical_lambda" {
+  rule      = aws_cloudwatch_event_rule.ical_schedule.name
+  target_id = "BuckheadButcherICalLambda"
+  arn       = aws_lambda_function.ical_generator.arn
+}
+
+# Lambda permission to allow EventBridge to invoke it
+resource "aws_lambda_permission" "allow_eventbridge" {
+  statement_id  = "AllowExecutionFromEventBridge"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.ical_generator.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.ical_schedule.arn
+}

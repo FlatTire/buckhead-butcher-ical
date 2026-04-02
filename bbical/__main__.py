@@ -238,6 +238,37 @@ def create_ical(events):
     return cal
 
 
+def generate_ics_content():
+    """Generate iCalendar file content as bytes without writing to disk."""
+    print("Scraping Buckhead Butcher Shop classes and events...\n")
+
+    # Scrape event links
+    event_links = scrape_event_links()
+    print(f"Found {len(event_links)} events\n")
+
+    if not event_links:
+        print("No events found!")
+        return None
+
+    # Scrape details for each event
+    events = []
+    for i, event_link in enumerate(event_links, 1):
+        try:
+            print(f"[{i}/{len(event_links)}] Scraping: {event_link['title']}")
+            details = scrape_event_details(event_link["url"])
+            events.append(details)
+        except Exception as e:
+            print(f"    Error: {e}")
+
+    print(f"\nSuccessfully scraped {len(events)} events")
+
+    # Create iCal file
+    print("Generating iCal content")
+    cal = create_ical(events)
+
+    return cal.to_ical()
+
+
 def main():
     """Main entry point."""
     print("Scraping Buckhead Butcher Shop classes and events...\n")

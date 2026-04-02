@@ -1,5 +1,6 @@
 .PHONY: help lint format type-check test check clean dev scrape pre-commit \
-         tf-init tf-fmt tf-validate tf-plan tf-apply tf-destroy tf-outputs tf-check
+         tf-init tf-fmt tf-validate tf-plan tf-apply tf-destroy tf-outputs tf-check \
+         lambda-package
 
 help:
 	@echo "Available targets:"
@@ -78,3 +79,14 @@ tf-apply:
 
 tf-destroy:
 	cd infra && terraform destroy
+
+# Lambda packaging target
+lambda-package:
+	cd infra && \
+	mkdir -p lambda_package && \
+	cp lambda_handler.py lambda_package/ && \
+	cp -r ../bbical lambda_package/ && \
+	pip install -r ../pyproject.toml -t lambda_package/ --quiet 2>/dev/null || true && \
+	cd lambda_package && zip -r ../lambda_function.zip . -q && cd .. && \
+	rm -rf lambda_package && \
+	echo "Lambda package created: infra/lambda_function.zip"

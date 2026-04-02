@@ -48,3 +48,28 @@ output "cloudfront_url" {
   description = "CloudFront distribution URL"
   value       = "https://${aws_cloudfront_distribution.site.domain_name}"
 }
+
+output "lambda_function_arn" {
+  description = "ARN of the Lambda function for generating iCalendar"
+  value       = aws_lambda_function.ical_generator.arn
+}
+
+output "lambda_function_name" {
+  description = "Name of the Lambda function"
+  value       = aws_lambda_function.ical_generator.function_name
+}
+
+output "eventbridge_rule_arn" {
+  description = "ARN of the EventBridge rule for scheduling"
+  value       = aws_cloudwatch_event_rule.ical_schedule.arn
+}
+
+output "ical_s3_location" {
+  description = "S3 location of the generated iCalendar file"
+  value       = "s3://${aws_s3_bucket.site.id}/buckhead_butcher_classes.ics"
+}
+
+output "ical_public_url" {
+  description = "Public URL to access the iCalendar file"
+  value       = "https://${var.hostname}/buckhead_butcher_classes.ics"
+}

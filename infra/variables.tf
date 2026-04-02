@@ -43,3 +43,9 @@ variable "s3_versioning_days" {
   type        = number
   default     = 90
 }
+
+variable "ical_schedule_expression" {
+  description = "EventBridge cron expression for iCal generation schedule"
+  type        = string
+  default     = "cron(0 */6 * * ? *)"
+}
