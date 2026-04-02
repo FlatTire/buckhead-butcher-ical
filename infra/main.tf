@@ -17,6 +17,8 @@ resource "aws_s3_bucket" "site" {
   bucket_prefix = "${var.domain_name}-site-"
 
   tags = var.tags
+
+  depends_on = [aws_acm_certificate_validation.site]
 }
 
 # Block all public access to S3 bucket
@@ -70,6 +72,11 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "site" {
   }
 }
 
+# Get existing Route53 hosted zone for the domain
+data "aws_route53_zone" "main" {
+  name = var.domain_name
+}
+
 # ACM Certificate for CloudFront
 resource "aws_acm_certificate" "site" {
   domain_name       = var.hostname
@@ -80,6 +87,33 @@ resource "aws_acm_certificate" "site" {
   }
 
   tags = var.tags
+}
+
+# Create Route53 DNS records for certificate validation
+resource "aws_route53_record" "cert_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.site.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.record]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = data.aws_route53_zone.main.zone_id
+}
+
+# Wait for certificate validation
+resource "aws_acm_certificate_validation" "site" {
+  certificate_arn = aws_acm_certificate.site.arn
+  timeouts {
+    create = "5m"
+  }
+  depends_on = [aws_route53_record.cert_validation]
 }
 
 # Origin Access Identity for CloudFront to access S3
@@ -313,4 +347,6 @@ resource "aws_cloudfront_distribution" "site" {
   }
 
   tags = var.tags
+
+  depends_on = [aws_acm_certificate_validation.site]
 }
