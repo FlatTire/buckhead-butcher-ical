@@ -493,7 +493,7 @@ Access in AWS Console: CloudFront → Distributions → Buckhead Butcher iCal
 
 ## License
 
-[Add appropriate license]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact & Support
 
