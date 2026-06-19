@@ -17,38 +17,38 @@ A Python web scraper that automatically generates iCalendar (`.ics`) files from 
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    EventBridge Rule                         │
-│              (cron: every 6 hours)                         │
-└────────────────────────┬────────────────────────────────────┘
-                         │ triggers
-                         ▼
+│                       EventBridge Rule                      │
+│                    (cron: every 6 hours)                    │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ triggers
+                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                  AWS Lambda Function                        │
-│          (buckhead-butcher-ical-generator)                 │
+│                     AWS Lambda Function                     │
+│              (buckhead-butcher-ical-generator)              │
 │                                                             │
-│  1. Scrapes buckheadbutchershop.com/classes-events/       │
-│  2. Extracts event details (title, date, time, location)  │
-│  3. Generates iCalendar content                           │
-│  4. Uploads to S3                                         │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                         ▼
+│    1. Scrape buckheadbutchershop.com/classes-events/        │
+│    2. Extract event details (title, date, time, location)   │
+│    3. Generate iCalendar content                            │
+│    4. Upload to S3                                          │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                      S3 Bucket                              │
-│     (noqa.io-site-20260402160936947900000003)             │
-│     buckhead_butcher_classes.ics (31.7 KB)                │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                         ▼
+│                          S3 Bucket                          │
+│          (noqa.io-site-20260402160936947900000003)          │
+│            buckhead_butcher_classes.ics (31.7 KB)           │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                  CloudFront CDN                             │
-│             (Global content distribution)                  │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                         ▼
+│                        CloudFront CDN                       │
+│                (Global content distribution)                │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              Route53 DNS Records                            │
-│     buckheadbutcher.noqa.io (A + AAAA alias records)      │
+│                     Route53 DNS Records                     │
+│       buckheadbutcher.noqa.io (A + AAAA alias records)      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
